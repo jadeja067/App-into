@@ -22,11 +22,9 @@ export class ShepherdComponent implements AfterViewInit {
       },
     };
 
-    // Initialize the tour steps
     this.initializeTourSteps();
   }
 
-  // Method to initialize tour steps
   private initializeTourSteps() {
     this.shepherdService.addSteps([
       {
@@ -121,7 +119,6 @@ export class ShepherdComponent implements AfterViewInit {
     ]);
   }
 
-  // Method to start the tour if there are search results
   startTour() {
     if (this.hasSearchResults) {
       this.shepherdService.start();
@@ -130,12 +127,11 @@ export class ShepherdComponent implements AfterViewInit {
     }
   }
 
-  // Method to handle search input
   onSearch(event: Event) {
-    const target = event.target as HTMLInputElement; // Type assertion to HTMLInputElement
-    const query = target.value; // Get the value from the input
+    const target = event.target as HTMLInputElement; 
+    const query = target.value; 
 
-    this.searchResults = []; // Reset results
+    this.searchResults = []; 
 
     if (query) {
       this.searchResults = this.performSearch(query);
@@ -144,28 +140,25 @@ export class ShepherdComponent implements AfterViewInit {
     this.updateSearchResults(this.searchResults);
   }
 
-  // Simulated search function (replace with actual logic)
   performSearch(query: string): string[] {
     const allResults = [
       'Result 1: Angular Basics',
       'Result 2: Advanced Angular Techniques',
       'Result 3: Angular Shepherd Guide',
       'Result 4: Angular Testing Strategies',
+      'Result 5: Feature One',
     ];
 
     return allResults.filter(result => result.toLowerCase().includes(query.toLowerCase()));
   }
 
-  // Method to update search results
   updateSearchResults(results: string[]) {
-    this.hasSearchResults = results.length > 0; // Check if there are results
+    this.hasSearchResults = results.length > 0; 
     if (this.hasSearchResults) {
-      // Optionally start tour here or show results
-      // this.startTour();
+      this.startTour();
     }
   }
 
-  // Helper method to create buttons
   private getButtons() {
     return [
       {
