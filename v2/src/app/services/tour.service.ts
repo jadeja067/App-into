@@ -23,8 +23,14 @@ export interface TourButton {
 export class TourService {
   private steps: TourStep[] = [];
   private currentStepIndex: number = -1;
-  private svgBackdrop?: SVGSVGElement;
-  constructor() {}
+  private svgBackdrop: SVGSVGElement | null = null;
+  private svgPath?: any;
+  constructor() {
+    window.addEventListener(
+      'resize',
+      this.throttle(this.onResize.bind(this), 100)
+    );
+  }
 
   addSteps(steps: TourStep[]) {
     this.steps = steps;
@@ -45,10 +51,8 @@ export class TourService {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         step.beforeShow?.();
-        setTimeout(() => {
-          this.renderTooltip(step, element);
-          step.afterShow?.();
-        }, 500);
+        this.renderTooltip(step, element as HTMLElement);
+        step.afterShow?.();
       }
     }
   }
@@ -57,17 +61,15 @@ export class TourService {
     this.clearTooltip();
     if (this.currentStepIndex < this.steps.length - 1) {
       this.currentStepIndex++;
-      this.removeSvgPath();
       this.generateSvgPath();
       this.showStep(this.currentStepIndex);
-    } else this.endTour()
+    }
   }
 
   prevStep() {
     this.clearTooltip();
     if (this.currentStepIndex > 0) {
       this.currentStepIndex--;
-      this.removeSvgPath();
       this.generateSvgPath();
       this.showStep(this.currentStepIndex);
     }
@@ -79,14 +81,14 @@ export class TourService {
     this.removeBackdrop();
   }
 
-  private renderTooltip(step: TourStep, element: Element) {
+  private renderTooltip(step: TourStep, element: HTMLElement) {
+    this.clearTooltip();
+
     const tooltip = document.createElement('div');
     tooltip.classList.add('tour-tooltip');
     tooltip.innerHTML = `
       <h4>${step.title}</h4>
       <p>${step.text}</p>`;
-
-    this.positionTooltip(tooltip, element, step.position);
 
     step.buttons?.forEach((button) => {
       const btn = document.createElement('button');
@@ -95,32 +97,39 @@ export class TourService {
       btn.onclick = button.action;
       tooltip.appendChild(btn);
     });
-
     document.body.appendChild(tooltip);
+    this.positionTooltip(tooltip, element, step.position);
   }
 
   private positionTooltip(
     tooltip: HTMLElement,
-    element: Element,
+    element: HTMLElement,
     position: string
   ) {
-    const rect = element.getBoundingClientRect();
     switch (position) {
       case 'top':
-        tooltip.style.top = `${rect.top - tooltip.offsetHeight}px`;
-        tooltip.style.left = `${rect.left}px`;
+        tooltip.style.top = `${
+          element.offsetTop - (tooltip.offsetHeight + 2)
+        }px`;
+        tooltip.style.left = `${element.offsetLeft + 2}px`;
         break;
       case 'bottom':
-        tooltip.style.top = `${rect.bottom}px`;
-        tooltip.style.left = `${rect.left}px`;
+        tooltip.style.top = `${
+          element.offsetTop + (element.offsetHeight + 2)
+        }px`;
+        tooltip.style.left = `${element.offsetLeft + 2}px`;
         break;
       case 'left':
-        tooltip.style.top = `${rect.top}px`;
-        tooltip.style.left = `${rect.left - tooltip.offsetWidth}px`;
+        tooltip.style.top = `${element.offsetTop + 2}px`;
+        tooltip.style.left = `${
+          element.offsetLeft + (element.offsetWidth + 2)
+        }px`;
         break;
       case 'right':
-        tooltip.style.top = `${rect.top}px`;
-        tooltip.style.left = `${rect.right}px`;
+        tooltip.style.top = `${element.offsetTop + 2}px`;
+        tooltip.style.left = `${
+          element.offsetLeft - (tooltip.offsetWidth + 2)
+        }px`;
         break;
     }
   }
@@ -133,6 +142,7 @@ export class TourService {
   }
 
   private createSvgBackdrop() {
+    this.removeBackdrop();
     this.svgBackdrop = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'svg'
@@ -140,60 +150,64 @@ export class TourService {
     this.svgBackdrop.setAttribute('class', 'tour-backdrop');
     this.svgBackdrop.setAttribute('width', '100%');
     this.svgBackdrop.setAttribute('height', '100%');
-    this.generateSvgPath();
-    document.body.appendChild(this.svgBackdrop);
-  }
-
-  private generateSvgPath() {
+    // this.generateSvgPath();
     const step = this.steps[this.currentStepIndex];
-    let pathData = '';
-
     if (step) {
       const element = document.querySelector(step.element);
       if (element) {
-        const elementRect = element.getBoundingClientRect();
-        const x = elementRect.left;
-        const y = elementRect.top;
-        const width = elementRect.width;
-        const height = elementRect.height;
-
-        pathData +=
-          `M ${window.innerWidth},${window.innerHeight} ` +
-          `H 0 ` +
-          `V 0 ` +
-          `H ${window.innerWidth} ` +
-          `V ${window.innerHeight} ` +
-          `Z ` +
-          `M ${x},${y} ` +
-          `a 0 0 0 0 0 0 0 ` +
-          `V ${y + height} ` +
-          `a 0 0 0 0 0 0 0 ` +
-          `H ${x + width} ` +
-          `a 0 0 0 0 0 0 0 ` +
-          `V ${y} ` +
-          `a 0 0 0 0 0 0 0 ` +
-          `Z`;
-
-        const backdropPath = document.createElementNS(
+        const pathData: string = this.calcSvgPath(element)
+        this.svgPath = document.createElementNS(
           'http://www.w3.org/2000/svg',
           'path'
         );
-        backdropPath.setAttribute('d', pathData);
-        backdropPath.setAttribute('fill', 'rgba(0, 0, 0, 0.5)');
-        backdropPath.setAttribute('stroke', 'none');
-        this.svgBackdrop?.appendChild(backdropPath);
+        this.svgPath.setAttribute('d', pathData);
+        this.svgPath.setAttribute('fill', 'rgba(0, 0, 0, 0.5)');
+        this.svgPath.setAttribute('stroke', 'none');
+        this.svgBackdrop?.appendChild(this.svgPath);
+      }
+    }
+    document.body.appendChild(this.svgBackdrop);
+  }
+  private calcSvgPath(element: Element): string {
+    const elementRect = element.getBoundingClientRect();
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        return `M ${width},${height} H 0 V 0 H ${width} V ${height} Z M ${elementRect.left},${elementRect.top} a 0 0 0 0 0 0 0 V ${elementRect.bottom} a 0 0 0 0 0 0 0 H ${elementRect.right} a 0 0 0 0 0 0 0 V ${elementRect.top} a 0 0 0 0 0 0 0 Z`;
+        
+  }
+  private generateSvgPath(): void {
+    const step = this.steps[this.currentStepIndex];
+    if (step) {
+      const element = document.querySelector(step.element);
+      if (element) {
+        const pathData: string = this.calcSvgPath(element)
+        this.svgPath.setAttribute('d', pathData);
       }
     }
   }
-
-  private removeSvgPath(): void {
-    this.svgBackdrop?.childNodes.forEach((node) => node.remove());
+  private onResize() {
+    if (this.currentStepIndex !== -1) {
+      this.generateSvgPath();
+    }
   }
 
   private removeBackdrop() {
-    const backdrop = document.querySelector('.tour-backdrop');
-    if (backdrop) {
-      backdrop.remove();
+    if (this.svgBackdrop) {
+      this.svgBackdrop.remove();
+      this.svgBackdrop = null;
     }
+  }
+
+  private throttle(fn: Function, wait: number) {
+    let time = Date.now();
+    return (...args: any[]) => {
+      if (time + wait - Date.now() < 0) {
+        fn.apply(this, args);
+        time = Date.now();
+      }
+    };
+  }
+  ngOnDestroy() {
+    window.removeEventListener('resize', this.onResize.bind(this));
   }
 }

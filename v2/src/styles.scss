@@ -1,3 +1,8 @@
+body {
+  height: 100vh;
+  width: 100vw;
+}
+
 .tour-tooltip h4 {
   margin: 0 0 10px 0;
   color: #3498db;
@@ -22,29 +27,31 @@
 .tour-button:hover {
   background-color: #2980b9;
 }
-/* The overlay (backdrop) */
-.tour-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    pointer-events: none; /* Allow clicks to pass through the backdrop */
-}
 
+.tour-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+.tour-backdrop path {
+  pointer-events: none; 
+}
 .tour-tooltip {
-    position: absolute;
-    z-index: 2000; /* Ensure tooltip is above the backdrop */
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s;
+  position: absolute;
+  z-index: 2000;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s;
 }
 
 .tour-highlight {
   position: relative;
-  z-index: 1001; /* Bring the element to the front */
+  z-index: 1001;
   border: 2px solid #f39c12;
   box-shadow: 0px 0px 10px 5px rgba(243, 156, 18, 0.5);
   transition: border 0.3s ease, box-shadow 0.3s ease;
@@ -56,9 +63,9 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  pointer-events: none; /* The mask itself is not interactive */
+  pointer-events: none;
   background-color: rgba(0, 0, 0, 0.7);
-  z-index: 999; /* The mask sits just below the highlighted element */
+  z-index: 999;
 }
 
 .tour-mask--transparent {
@@ -67,8 +74,7 @@
 }
 
 .tour-mask:before {
-  content: '';
+  content: "";
   position: absolute;
-  background: rgba(0, 0, 0, 0.7); /* Dimming around the mask */
+  background: rgba(0, 0, 0, 0.7);
 }
-
