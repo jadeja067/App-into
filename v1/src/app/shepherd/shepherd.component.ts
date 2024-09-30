@@ -4,6 +4,7 @@ import { ShepherdService } from 'angular-shepherd';
 @Component({
   selector: 'app-shepherd',
   templateUrl: './shepherd.component.html',
+  styleUrls: [ './shepherd.component.scss']
 })
 export class ShepherdComponent implements AfterViewInit {
   hasSearchResults: boolean = false;
@@ -98,7 +99,7 @@ export class ShepherdComponent implements AfterViewInit {
     this.shepherdService.confirmCancel = false;
     this.shepherdService.defaultStepOptions = {
       classes: 'custom-shepherd-class',
-      scrollTo: false,
+      scrollTo: true,
       cancelIcon: {
         enabled: true,
       },

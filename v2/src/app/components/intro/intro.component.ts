@@ -23,7 +23,7 @@ export class IntroComponent  {
         element: '.feature2',
         title: 'Second Step',
         text: 'This is the second step of the tour.',
-        position: 'bottom',
+        position: 'top',
         buttons: [
           { text: 'Back', action: () => this.tourService.prevStep() },
           { text: 'Next', action: () => this.tourService.nextStep() },
@@ -34,7 +34,18 @@ export class IntroComponent  {
         element: '.feature2-a',
         title: 'Third Step',
         text: 'This is the third step of the tour.',
-        position: 'top',
+        position: 'left',
+        buttons: [
+          { text: 'Back', action: () => this.tourService.prevStep() },
+          { text: 'Next', action: () => this.tourService.nextStep() },
+        ],
+      },
+      {
+        id: 'step3',
+        element: '.feature2-li',
+        title: 'Third Step',
+        text: 'This is the third step of the tour.',
+        position: 'bottom',
         buttons: [
           { text: 'Back', action: () => this.tourService.prevStep() },
           { text: 'Next', action: () => this.tourService.nextStep() },
@@ -45,7 +56,7 @@ export class IntroComponent  {
         element: '.feature3',
         title: 'Fourth Step',
         text: 'This is the fourth step of the tour.',
-        position: 'right',
+        position: 'bottom',
         buttons: [{ text: 'Finish', action: () => this.tourService.endTour() }],
       },
     ];

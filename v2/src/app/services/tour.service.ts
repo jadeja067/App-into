@@ -30,6 +30,7 @@ export class TourService {
       'resize',
       this.throttle(this.onResize.bind(this), 100)
     );
+    window.addEventListener('scroll',this.onResize.bind(this))
   }
 
   addSteps(steps: TourStep[]) {
@@ -122,13 +123,13 @@ export class TourService {
       case 'left':
         tooltip.style.top = `${element.offsetTop + 2}px`;
         tooltip.style.left = `${
-          element.offsetLeft + (element.offsetWidth + 2)
+          element.offsetLeft - (tooltip.offsetWidth + 2)
         }px`;
         break;
       case 'right':
         tooltip.style.top = `${element.offsetTop + 2}px`;
         tooltip.style.left = `${
-          element.offsetLeft - (tooltip.offsetWidth + 2)
+          element.offsetLeft + element.offsetWidth + (tooltip.offsetWidth + 2)
         }px`;
         break;
     }
@@ -155,7 +156,7 @@ export class TourService {
     if (step) {
       const element = document.querySelector(step.element);
       if (element) {
-        const pathData: string = this.calcSvgPath(element)
+        const pathData: string = this.calcSvgPath(element);
         this.svgPath = document.createElementNS(
           'http://www.w3.org/2000/svg',
           'path'
@@ -170,17 +171,17 @@ export class TourService {
   }
   private calcSvgPath(element: Element): string {
     const elementRect = element.getBoundingClientRect();
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        return `M ${width},${height} H 0 V 0 H ${width} V ${height} Z M ${elementRect.left},${elementRect.top} a 0 0 0 0 0 0 0 V ${elementRect.bottom} a 0 0 0 0 0 0 0 H ${elementRect.right} a 0 0 0 0 0 0 0 V ${elementRect.top} a 0 0 0 0 0 0 0 Z`;
-        
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    return `M ${w},${h} H 0 V 0 H ${w} V ${h} Z M ${elementRect.left},${elementRect.top} a 0 0 0 0 0 0 0 V ${elementRect.bottom} a 0 0 0 0 0 0 0 H ${elementRect.right} a 0 0 0 0 0 0 0 V ${elementRect.top} a 0 0 0 0 0 0 0 Z`;
   }
+  
   private generateSvgPath(): void {
     const step = this.steps[this.currentStepIndex];
     if (step) {
       const element = document.querySelector(step.element);
       if (element) {
-        const pathData: string = this.calcSvgPath(element)
+        const pathData: string = this.calcSvgPath(element);
         this.svgPath.setAttribute('d', pathData);
       }
     }
