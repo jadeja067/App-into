@@ -26,11 +26,8 @@ export class TourService {
   private svgBackdrop: SVGSVGElement | null = null;
   private svgPath?: any;
   constructor() {
-    window.addEventListener(
-      'resize',
-      this.throttle(this.onResize.bind(this), 100)
-    );
-    window.addEventListener('scroll',this.onResize.bind(this))
+    window.addEventListener('resize', this.onResize.bind(this));
+    window.addEventListener('scroll', this.onResize.bind(this));
   }
 
   addSteps(steps: TourStep[]) {
@@ -50,7 +47,7 @@ export class TourService {
     if (step) {
       const element = document.querySelector(step.element);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: 'auto', block: 'center' });
         step.beforeShow?.();
         this.renderTooltip(step, element as HTMLElement);
         step.afterShow?.();
@@ -107,32 +104,34 @@ export class TourService {
     element: HTMLElement,
     position: string
   ) {
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft =
+      window.pageXOffset || document.documentElement.scrollLeft;
+
     switch (position) {
       case 'top':
         tooltip.style.top = `${
-          element.offsetTop - (tooltip.offsetHeight + 2)
+          rect.top + scrollTop - (tooltip.offsetHeight + 2)
         }px`;
-        tooltip.style.left = `${element.offsetLeft + 2}px`;
+        tooltip.style.left = `${rect.left + scrollLeft + 2}px`;
         break;
       case 'bottom':
-        tooltip.style.top = `${
-          element.offsetTop + (element.offsetHeight + 2)
-        }px`;
-        tooltip.style.left = `${element.offsetLeft + 2}px`;
+        tooltip.style.top = `${rect.top + scrollTop + rect.height + 2}px`;
+        tooltip.style.left = `${rect.left + scrollLeft + 2}px`;
         break;
       case 'left':
-        tooltip.style.top = `${element.offsetTop + 2}px`;
+        tooltip.style.top = `${rect.top + scrollTop + 2}px`;
         tooltip.style.left = `${
-          element.offsetLeft - (tooltip.offsetWidth + 2)
+          rect.left + scrollLeft - (tooltip.offsetWidth + 2)
         }px`;
         break;
       case 'right':
-        tooltip.style.top = `${element.offsetTop + 2}px`;
-        tooltip.style.left = `${
-          element.offsetLeft + element.offsetWidth + (tooltip.offsetWidth + 2)
-        }px`;
+        tooltip.style.top = `${rect.top + scrollTop + 2}px`;
+        tooltip.style.left = `${rect.left + scrollLeft + rect.width + 2}px`;
         break;
     }
+    
   }
 
   private clearTooltip() {
@@ -175,7 +174,7 @@ export class TourService {
     const h = window.innerHeight;
     return `M ${w},${h} H 0 V 0 H ${w} V ${h} Z M ${elementRect.left},${elementRect.top} a 0 0 0 0 0 0 0 V ${elementRect.bottom} a 0 0 0 0 0 0 0 H ${elementRect.right} a 0 0 0 0 0 0 0 V ${elementRect.top} a 0 0 0 0 0 0 0 Z`;
   }
-  
+
   private generateSvgPath(): void {
     const step = this.steps[this.currentStepIndex];
     if (step) {
@@ -198,17 +197,8 @@ export class TourService {
       this.svgBackdrop = null;
     }
   }
-
-  private throttle(fn: Function, wait: number) {
-    let time = Date.now();
-    return (...args: any[]) => {
-      if (time + wait - Date.now() < 0) {
-        fn.apply(this, args);
-        time = Date.now();
-      }
-    };
-  }
   ngOnDestroy() {
     window.removeEventListener('resize', this.onResize.bind(this));
+    window.removeEventListener('scroll', this.onResize.bind(this));
   }
 }

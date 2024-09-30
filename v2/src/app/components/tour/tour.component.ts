@@ -33,7 +33,7 @@ export class TourComponent {
         element: '.third-element',
         title: 'Third Step',
         text: 'This is the third step of the tour.',
-        position: 'left',
+        position: 'right',
         buttons: [
           { text: 'Back', action: () => this.tourService.prevStep() },
           { text: 'Next', action: () => this.tourService.nextStep() },
@@ -44,7 +44,7 @@ export class TourComponent {
         element: '.fourth-element',
         title: 'Fourth Step',
         text: 'This is the fourth step of the tour.',
-        position: 'right',
+        position: 'left',
         buttons: [{ text: 'Finish', action: () => this.tourService.endTour() }],
       },
     ];
